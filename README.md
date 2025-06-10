@@ -1,16 +1,27 @@
-# audio_doc
+# AudioDoc
 
-A new Flutter project.
+AudioDoc is a mobile application developed with Flutter that converts PDF documents into spoken audio, allowing users to listen to their documents.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Text-to-Speech Conversion**: Convert PDF documents into audio for listening.
 
-A few resources to get you started if this is your first Flutter project:
+## Technical Implementation
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Built with Flutter for cross-platform compatibility
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation
+
+1. Clone the repository
+2. Install dependencies: `flutter pub get`
+4. Run the app: `flutter run`
+
+## Dependencies
+
+- flutter_pdfview: ^1.4.0+1
+- flutter_tts: ^4.2.3
+- flutter_riverpod: ^2.6.1
+- file_picker: ^10.1.9
+- read_pdf_text: ^0.3.0
+
+Contributions to this project are very welcome! (https://github.com/joshuacreator/audio_doc/)

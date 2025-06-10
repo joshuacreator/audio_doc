@@ -4,6 +4,7 @@ class ControlPanelWidget extends StatelessWidget {
   const ControlPanelWidget({
     super.key,
     required this.isPlaying,
+    required this.isLoading,
     required this.onPlayPausePressed,
     required this.onNextPagePressed,
     required this.onPreviousPagePressed,
@@ -12,7 +13,7 @@ class ControlPanelWidget extends StatelessWidget {
     required this.totalPageCount,
   });
 
-  final bool isPlaying;
+  final bool isPlaying, isLoading;
   final VoidCallback onPlayPausePressed,
       onNextPagePressed,
       onPreviousPagePressed,
@@ -45,14 +46,24 @@ class ControlPanelWidget extends StatelessWidget {
                 onPressed: onPreviousPagePressed,
                 icon: Icon(Icons.skip_previous_rounded),
               ),
-              IconButton.filledTonal(
-                onPressed: onPlayPausePressed,
-                icon: Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              Visibility(
+                visible: !isLoading,
+                replacement: SizedBox.square(
+                  dimension: 25.0,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3.0,
+                    strokeCap: StrokeCap.round,
+                  ),
                 ),
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFF152b51),
-                  foregroundColor: Colors.white,
+                child: IconButton.filledTonal(
+                  onPressed: onPlayPausePressed,
+                  icon: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFF152b51),
+                    foregroundColor: Colors.white,
+                  ),
                 ),
               ),
               IconButton(

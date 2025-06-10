@@ -5,6 +5,8 @@ import 'package:audio_doc/widgets/control_panel_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:read_pdf_text/read_pdf_text.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,11 +18,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   File? doc;
   String? title;
-
-  bool isPlaying = false;
-
+  bool isSpeaking = false;
+  bool isLoading = false;
   int currentPage = 0, totalPageCount = 0;
   PDFViewController? _pdfViewController;
+  FlutterTts flutterTts = FlutterTts();
+  String? extractedText;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +38,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         body: doc == null
             ? Center(
                 child: TextButton.icon(
-                  onPressed: () {
-                    FileService.pickPdfFile().then((value) {
+                  onPressed: () async {
+                    await FileService.pickPdfFile().then((value) async {
                       if (value != null) {
                         setState(() {
                           doc = value;
                           title = value.path.split("/").last;
                         });
+
+                        await _extractText();
                       }
                     });
                   },
@@ -80,11 +85,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Visibility(
             visible: doc != null,
             child: ControlPanelWidget(
-              isPlaying: isPlaying,
+              isPlaying: isSpeaking,
+              isLoading: isLoading,
               onPlayPausePressed: () {
-                setState(() {
-                  isPlaying = !isPlaying;
-                });
+                if (isSpeaking) {
+                  flutterTts.pause();
+                } else {
+                  _speak();
+                }
               },
               onNextPagePressed: () {
                 if (currentPage == totalPageCount) return;
@@ -97,8 +105,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _pdfViewController?.setPage(currentPage - 1);
               },
               onClosePressed: () {
+                flutterTts.stop();
                 setState(() {
-                  isPlaying = false;
+                  isSpeaking = false;
+                  isLoading = false;
                   doc = null;
                 });
               },
@@ -109,5 +119,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _extractText() async {
+    if (doc != null) {
+      try {
+        setState(() {
+          isLoading = true;
+        });
+        extractedText = await ReadPdfText.getPDFtext(doc!.path);
+        setState(() {
+          isLoading = false;
+        });
+      } catch (e) {
+        debugPrint("Error extracting text: $e");
+      }
+    }
+  }
+
+  Future<void> _speak() async {
+    if (extractedText != null && extractedText!.isNotEmpty) {
+      setState(() {
+        isSpeaking = true;
+      });
+      await flutterTts.setVoice({"name": "en-GB", "locale": "en-GB"});
+      await flutterTts.awaitSpeakCompletion(true);
+      await flutterTts
+          .speak(extractedText ?? "Unable to read text from file")
+          .then((value) {
+        setState(() {
+          isSpeaking = false;
+        });
+      });
+    } else {
+      debugPrint("No text to speak or text extraction failed.");
+      setState(() {
+        isSpeaking = false;
+      });
+    }
   }
 }
